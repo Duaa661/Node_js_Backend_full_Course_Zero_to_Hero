@@ -1,0 +1,14 @@
+# Dependencies
+node_modules/
+
+# Large video files
+temp.mp4
+
+# Environment files
+.env
+.env.local
+
+# Build files
+dist/
+build/
+.next/

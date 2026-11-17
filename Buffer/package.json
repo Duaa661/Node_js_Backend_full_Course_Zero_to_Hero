@@ -1,0 +1,18 @@
+{
+  "name": "buffer",
+  "version": "1.0.0",
+  "main": "ArrayBuffer.js",
+  "type": "module",
+  "scripts": {
+    "debug":"node --inspect-brk nodejs_buffer.js"
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "expres": "^0.0.5",
+    "express": "^5.2.1"
+  }
+}

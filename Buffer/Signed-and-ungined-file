@@ -1,0 +1,387 @@
+<!-- In JavaScript, **signed and unsigned values are mainly relevant when you work with binary data, typed arrays, `ArrayBuffer`, and Node.js `Buffer`**. Normal JavaScript `Number` values are not separately signed/unsigned.
+
+## 1. What is signed?
+
+A **signed integer** can store both:
+
+* Positive numbers
+* Negative numbers
+
+For example, an 8-bit signed integer (`Int8`) has this range:
+
+```text
+-128 to 127
+```
+
+```js
+const arr = new Int8Array(3);
+
+arr[0] = 100;
+arr[1] = -50;
+arr[2] = 127;
+
+console.log(arr);
+// Int8Array(3) [100, -50, 127]
+```
+
+The first bit is effectively used to represent the sign in the underlying two's-complement representation.
+
+---
+
+## 2. What is unsigned?
+
+An **unsigned integer can only store 0 and positive numbers**.
+
+For an 8-bit unsigned integer (`Uint8`):
+
+```text
+0 to 255
+```
+
+```js
+const arr = new Uint8Array(3);
+
+arr[0] = 100;
+arr[1] = 200;
+arr[2] = 255;
+
+console.log(arr);
+// Uint8Array(3) [100, 200, 255]
+```
+
+Because there is no negative range, all 8 bits can represent the magnitude.
+
+---
+
+## 3. Signed vs unsigned
+
+| Type     | Bits |        Minimum |       Maximum |
+| -------- | ---: | -------------: | ------------: |
+| `Int8`   |    8 |           -128 |           127 |
+| `Uint8`  |    8 |              0 |           255 |
+| `Int16`  |   16 |        -32,768 |        32,767 |
+| `Uint16` |   16 |              0 |        65,535 |
+| `Int32`  |   32 | -2,147,483,648 | 2,147,483,647 |
+| `Uint32` |   32 |              0 | 4,294,967,295 |
+
+JavaScript provides these through **TypedArrays**.
+
+---
+
+# 4. Why do we need signed and unsigned?
+
+Imagine you have exactly **8 bits**:
+
+```text
+00000000
+```
+
+There are:
+
+```text
+2^8 = 256
+```
+
+possible combinations.
+
+### Unsigned
+
+All 256 combinations represent positive values:
+
+```text
+00000000 = 0
+00000001 = 1
+...
+11111111 = 255
+```
+
+So:
+
+```text
+0 → 255
+```
+
+### Signed
+
+Those 256 combinations are divided between negative and positive values:
+
+```text
+-128 → 127
+```
+
+So you sacrifice positive range in order to represent negative numbers.
+
+---
+
+# 5. JavaScript example
+
+This is where it becomes interesting:
+
+```js
+const a = new Int8Array(1);
+a[0] = 255;
+
+console.log(a[0]);
+```
+
+Output:
+
+```text
+-1
+```
+
+Why?
+
+Because `Int8Array` can only represent:
+
+```text
+-128 → 127
+```
+
+`255` doesn't fit into that range, so its 8-bit representation is interpreted as `-1`.
+
+Now:
+
+```js
+const b = new Uint8Array(1);
+b[0] = 255;
+
+console.log(b[0]);
+```
+
+Output:
+
+```text
+255
+```
+
+because `Uint8Array` supports:
+
+```text
+0 → 255
+```
+
+---
+
+# 6. Real-life usage
+
+This becomes very useful in **backend development, networking, files, images, cryptography, and binary protocols**.
+
+### Example 1: Image data
+
+Images are basically binary data.
+
+A pixel's RGB values normally range from:
+
+```text
+0 → 255
+```
+
+For example:
+
+```text
+Red   = 255
+Green = 100
+Blue  = 50
+```
+
+That's why `Uint8Array` is very useful for image/binary data.
+
+```js
+const pixel = new Uint8Array([255, 100, 50]);
+
+console.log(pixel);
+```
+
+---
+
+### Example 2: Node.js file handling
+
+Suppose your Node.js backend receives a file.
+
+The file is ultimately bytes:
+
+```text
+10101010
+11110000
+01010101
+...
+```
+
+Node.js commonly works with:
+
+```js
+Buffer
+```
+
+For example:
+
+```js
+const buffer = Buffer.from("Hello");
+
+console.log(buffer);
+```
+
+You might see something like:
+
+```text
+<Buffer 48 65 6c 6c 6f>
+```
+
+Those hexadecimal values represent bytes.
+
+This is important when working with:
+
+* File uploads
+* PDFs
+* Images
+* Videos
+* ZIP files
+* Network packets
+* Encryption
+* AWS S3 uploads
+
+---
+
+# 7. Real-life signed example
+
+Suppose a sensor sends temperature data.
+
+Temperature can be negative:
+
+```text
+-20°C
+-5°C
+0°C
+25°C
+50°C
+```
+
+A signed integer makes sense:
+
+```js
+const temperature = new Int8Array([-20, -5, 0, 25, 50]);
+
+console.log(temperature);
+```
+
+Because temperature needs negative values.
+
+---
+
+# 8. Real-life unsigned example
+
+Suppose a system stores a person's age:
+
+```text
+0
+1
+20
+50
+100
+```
+
+Negative age doesn't make sense.
+
+So conceptually an unsigned value is appropriate.
+
+Another excellent example is a **byte**:
+
+```text
+0 → 255
+```
+
+A byte doesn't need to represent `-20`; it simply represents raw binary data.
+
+---
+
+# 9. Important for your Node.js backend
+
+Since you're learning **Node.js backend and `ArrayBuffer`**, this is particularly important.
+
+You may encounter:
+
+```js
+ArrayBuffer
+Uint8Array
+Int8Array
+Uint16Array
+Int16Array
+Uint32Array
+Int32Array
+DataView
+Buffer
+```
+
+For example:
+
+```js
+const buffer = new ArrayBuffer(4);
+
+const unsigned = new Uint8Array(buffer);
+
+unsigned[0] = 255;
+unsigned[1] = 100;
+
+console.log(unsigned);
+```
+
+Here:
+
+```text
+Uint8Array
+     ↓
+8 bits per element
+     ↓
+0 → 255
+```
+
+Whereas:
+
+```js
+const signed = new Int8Array(4);
+
+signed[0] = -1;
+signed[1] = -100;
+
+console.log(signed);
+```
+
+Here:
+
+```text
+Int8Array
+     ↓
+8 bits per element
+     ↓
+-128 → 127
+```
+
+---
+
+## 10. Easy way to remember
+
+Think of an **8-bit box**.
+
+### `Uint8`
+
+```text
+No negative numbers
+
+0 ─────────────────────── 255
+```
+
+### `Int8`
+
+```text
+Negative        Positive
+
+-128 ───────── 0 ───────── 127
+```
+
+So the simple rule is:
+
+> **Signed = negative + positive**
+> **Unsigned = zero + positive**
+
+And in JavaScript, you generally encounter this distinction when dealing with **binary data rather than ordinary `Number` variables**. -->
